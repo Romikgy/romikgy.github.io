@@ -1,0 +1,180 @@
+﻿<html>
+<script src="sha1.js"></script>
+<script language="JavaScript">
+    <!--
+function dump(obj) {
+    var out = "";
+    if(obj && typeof(obj) == "object"){
+        for (var i in obj) {
+            out += i + ": " + obj[i] + "\n";
+        }
+    } else {
+        out = obj;
+    }
+    return (out);
+}
+function Hex2Bin(hex){
+	var bytes = [];
+	// alert(hex.length.toString());
+	// alert(hex);
+	for(var i=0; i< hex.length-1; i+=2){
+    bytes.push(parseInt(hex.substr(i, 2), 16));
+	}
+	// alert(bytes.length.toString());
+	return String.fromCharCode.apply(String, bytes);
+}
+function Bin2Hex(str){
+	var o="";
+	var t;
+	// alert(str.length.toString());
+	for(var i=0; i< str.length; i+=1){
+		t=str.charCodeAt(i);
+		if (t<16)
+		o+="0"+t.toString(16)
+	else
+	o+=t.toString(16);
+	}
+	// alert(o.length.toString());
+	return o;
+}
+function xorstr(x1,x2){
+	var o="";
+	for (var i=0;i<x1.length;i++)
+	{
+		 o+=String.fromCharCode(x1.charCodeAt(i)^x2.charCodeAt(i));
+	}
+	return o;
+}
+
+function utf8_to_b64( str ) {
+  return window.btoa( str );
+}
+
+function b64_to_utf8( str ) {
+  return window.atob( str );
+}
+function inttostr(x){
+	var t="";
+	for (var i =0;i<4;i++)
+	{
+		t+=String.fromCharCode((x >> (i*8))&0xff);
+	}
+	return t;
+}
+
+function encode()
+{
+	
+	var lstxt =document.getElementById("crypted").value.split("\n");
+	var pw=document.getElementById("mypass").value;
+	var out="";
+	var tm;
+	var txt;
+	var cr="";
+	if (pw=="") return;
+	// alert(lstxt.length);
+	for ( i=0;i<lstxt.length;i++)
+	{
+	if (i!=0) cr="\n";	
+	tm=parseInt((new Date()).getTime()/1000);
+	tm=inttostr(tm);
+	txt=lstxt[i];
+	var hashkey=Hex2Bin(Sha1.hash(tm+pw));
+	var hashtxt=Hex2Bin(Sha1.hash(txt));
+	var sbox=xorstr(hashkey,hashtxt);
+	while (sbox.length<txt.length) sbox+=Hex2Bin(Sha1.hash(sbox));
+	sbox=sbox.substring(0,txt.length);
+	var crypted=xorstr(sbox,txt);
+	out+=cr+utf8_to_b64(tm+hashtxt+crypted);
+	}
+	// alert(tm.toString());
+	
+	document.getElementById("decoded").value=out;
+}
+
+function decode()
+{
+
+	var txt =document.getElementById("crypted").value.split("\n");//.charCodeAt(0)
+	var mypass=document.getElementById("mypass").value;
+	var out="";
+	var i;
+	var t0;
+	var sz=txt.length;
+	if (mypass=="") return;
+	for ( i=0;i<sz;i++)
+		// i=0;
+	{
+		var cr="\n";
+		if (i==0) cr="";
+	if (txt[i]=="") continue;
+	t0="";
+	try{
+	t0=b64_to_utf8(txt[i]);
+	}
+	catch (err)
+	 {
+		out+=cr+txt[i];
+		continue;
+		}
+	var t1=t0.substring(0,4);
+	var cry=t0.substring(4);
+	
+	
+	
+	
+	var t2=t1.charCodeAt(0)+t1.charCodeAt(1)*256+t1.charCodeAt(2)*256*256+t1.charCodeAt(3)*256*256*256;
+	
+	var crtxt=cry.substring(20);
+	var crchk=cry.substring(0,20);
+
+	var ss=t1+mypass;
+	
+	var hash = (Sha1.hash(ss.toString()).toString());
+	
+	var sbox=xorstr(Hex2Bin(hash),crchk)
+	while (sbox.length<crtxt.length)
+	{
+		sbox+=Hex2Bin(Sha1.hash(sbox))
+	}
+	sbox=sbox.substring(0,crtxt.length)
+	
+	var decry=xorstr(sbox,crtxt);
+	if (Sha1.hash(decry)==Bin2Hex(crchk))
+	out+=cr+decry;
+else
+	out+=cr+$txt[1];
+	
+	}
+	document.getElementById("decoded").value=out;
+}
+    -->
+    </script>
+
+<head>
+<title>Test head</title>
+</head>
+<body>
+<form id="myform">
+Text:<br>
+<textarea rows="10" cols="100" name="comment" placeholder="Enter text" 
+      required form="myform"  id="crypted"></textarea>
+
+<br>
+Pass:<br>
+
+<input type="password" id="mypass" >
+
+<button type="button"  onClick="decode(); return true;">Decode</button>
+<button type="button"  onClick="encode(); return true;">Encode</button>
+<br><br>
+<textarea rows="10" cols="100"  
+      required form="myform"  id="decoded"></textarea>
+</form>
+<p>
+
+</p>
+</body>
+</html>
+
+
